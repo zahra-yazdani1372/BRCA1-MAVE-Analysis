@@ -1,5 +1,5 @@
 
-name: Download BRCA1 MAVE Data
+name: Download and Validate BRCA1 MAVE Data
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  download-data:
+  download-and-validate:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,10 +28,23 @@ jobs:
       - name: Download BRCA1 scores
         run: python scripts/01_data_acquisition.py
 
-      - name: Upload downloaded dataset
+      - name: Validate BRCA1 dataset
+        run: python scripts/02_data_validation.py
+
+      - name: Upload raw dataset
         uses: actions/upload-artifact@v4
         with:
           name: BRCA1-E3-raw-data
           path: data/raw/BRCA1_E3_scores.csv
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload validation reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: BRCA1-data-validation-reports
+          path: |
+            results/tables/data_quality_report.csv
+            results/tables/data_quality_summary.txt
           if-no-files-found: error
           retention-days: 30
